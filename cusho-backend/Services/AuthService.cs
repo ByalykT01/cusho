@@ -19,8 +19,8 @@ public class AuthService(ApplicationDbContext dbContext, IOptions<JwtOptions> jw
     {
         var normalizedEmail = userRegistrationDto.Email.ToLowerInvariant();
 
-        if (await dbContext.Users.AnyAsync(u => u.Email == userRegistrationDto.Email))
-            return Result<UserResponseDto>.Failure
+        if (await dbContext.Users.AnyAsync(u => u.Email == normalizedEmail))
+            return Result<UserResponseDto>.Failure("Email is already in use");
 
         var cart = new Cart();
 

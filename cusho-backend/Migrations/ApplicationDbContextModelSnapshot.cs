@@ -267,7 +267,7 @@ namespace cusho.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uuid");
 
-                    b.Property<Guid>("AddressId")
+                    b.Property<Guid?>("AddressId")
                         .HasColumnType("uuid");
 
                     b.Property<Guid>("CartId")
@@ -441,9 +441,7 @@ namespace cusho.Migrations
                 {
                     b.HasOne("cusho.Models.Address", "Address")
                         .WithMany()
-                        .HasForeignKey("AddressId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
+                        .HasForeignKey("AddressId");
 
                     b.HasOne("cusho.Models.Cart", "Cart")
                         .WithMany()
