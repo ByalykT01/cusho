@@ -1,34 +1,27 @@
-using Microsoft.OpenApi;
-
-namespace cusho.Configuration.Extensions;
-
 using Microsoft.AspNetCore.Builder;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using Microsoft.OpenApi;
+
+namespace cusho.Configuration.Extensions;
 
 public static class DocumentationExtensions
 {
     public static IHostApplicationBuilder AddDocumentation(this IHostApplicationBuilder builder)
     {
-        builder.Services.AddEndpointsApiExplorer();
-
-        builder.Services.AddSwaggerGen(options =>
+        builder.Services.AddOpenApi(options =>
         {
-            const string securitySchemeName = "Bearer";
+            options.OpenApiVersion = OpenApiSpecVersion.OpenApi3_0;
 
-            options.AddSecurityDefinition(securitySchemeName, new OpenApiSecurityScheme
+            options.AddDocumentTransformer((document, context, token) =>
             {
-                Description = "Enter JWT token in the format: Bearer {your token}",
-                Name = "Authorization",
-                In = ParameterLocation.Header,
-                Type = SecuritySchemeType.Http,
-                Scheme = "bearer", 
-                BearerFormat = "JWT"
-            });
-
-            options.AddSecurityRequirement(document => new OpenApiSecurityRequirement
-            {
-                [new OpenApiSecuritySchemeReference(securitySchemeName, document)] = new List<string>(Array.Empty<string>())
+                document.Info = new OpenApiInfo
+                {
+                    Title = "Cusho API",
+                    Version = "v1",
+                    Description = "Cusho Backend API"
+                };
+                return Task.CompletedTask;
             });
         });
 
@@ -39,13 +32,12 @@ public static class DocumentationExtensions
     {
         if (app.Environment.IsDevelopment())
         {
-            app.UseSwagger();
+            app.MapOpenApi();
 
             app.UseSwaggerUI(options =>
             {
-                options.SwaggerEndpoint("/swagger/v1/swagger.json", "Your API v1");
+                options.SwaggerEndpoint("/openapi/v1.json", "Cusho API v1");
                 options.RoutePrefix = "swagger";
-                
                 options.DisplayRequestDuration();
                 options.EnableTryItOutByDefault();
             });

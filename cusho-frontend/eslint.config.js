@@ -1,5 +1,5 @@
 //  @ts-check
-
+import eslintConfigPrettier from "eslint-config-prettier/flat";
 import { tanstackConfig } from '@tanstack/eslint-config'
 
 export default [
@@ -17,4 +17,5 @@ export default [
   {
     ignores: ['eslint.config.js', 'prettier.config.js'],
   },
+  eslintConfigPrettier
 ]
