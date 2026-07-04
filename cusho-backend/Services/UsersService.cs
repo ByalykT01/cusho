@@ -9,7 +9,7 @@ namespace cusho.Services;
 
 public sealed class UsersService(ApplicationDbContext dbContext, ILogger<UsersService> logger)
 {
-    public async Task<Result<UserResponseDto>> GetUserByIdAsync(Guid userId)
+    public async Task<Result<UserResponseDto>> GetUserByIdAsync(Guid userId, CancellationToken cancellationToken)
     {
         var foundUser = await dbContext.Users.AsNoTracking().Where(u => u.Id.Equals(userId))
             .Select(u => new UserResponseDto()
@@ -19,12 +19,12 @@ public sealed class UsersService(ApplicationDbContext dbContext, ILogger<UsersSe
                 LastName = u.LastName,
                 Email = u.Email,
             })
-            .FirstOrDefaultAsync();
+            .FirstOrDefaultAsync(cancellationToken);
 
         return foundUser ?? Result<UserResponseDto>.Failure("User not found");
     }
 
-    public async Task<Result<UserResponseDto>> GetUserByEmailAsync(string email)
+    public async Task<Result<UserResponseDto>> GetUserByEmailAsync(string email, CancellationToken cancellationToken)
     {
         var normalizedEmail = email.Trim().ToLowerInvariant();
         var foundUser = await dbContext.Users.AsNoTracking().Where(u => u.Email.Equals(normalizedEmail))
@@ -35,12 +35,12 @@ public sealed class UsersService(ApplicationDbContext dbContext, ILogger<UsersSe
                 LastName = u.LastName,
                 Email = u.Email,
             })
-            .FirstOrDefaultAsync();
+            .FirstOrDefaultAsync(cancellationToken);
 
         return foundUser ?? Result<UserResponseDto>.Failure("User not found");
     }
 
-    public async Task<Result<List<UserResponseDto>>> GetAllUsersAsync()
+    public async Task<Result<List<UserResponseDto>>> GetAllUsersAsync(CancellationToken cancellationToken)
     {
         var foundUsers = await dbContext.Users.AsNoTracking()
             .Select(u => new UserResponseDto()
@@ -50,15 +50,15 @@ public sealed class UsersService(ApplicationDbContext dbContext, ILogger<UsersSe
                 LastName = u.LastName,
                 Email = u.Email,
             })
-            .ToListAsync();
+            .ToListAsync(cancellationToken);
 
         return foundUsers;
     }
 
     public async Task<Result<ConfirmationResponseDto>> ChangePasswordAsync(Guid userId,
-        ChangePasswordDto changePasswordDto)
+        ChangePasswordDto changePasswordDto, CancellationToken cancellationToken)
     {
-        var foundUser = await dbContext.Users.FirstOrDefaultAsync(u => u.Id == userId);
+        var foundUser = await dbContext.Users.FirstOrDefaultAsync(u => u.Id == userId, cancellationToken);
         if (foundUser is not { IsActive: true })
         {
             logger.LogWarning("Password change failed because user is missing or inactive.");
@@ -91,7 +91,7 @@ public sealed class UsersService(ApplicationDbContext dbContext, ILogger<UsersSe
         }
 
         foundUser.Password = BCrypt.Net.BCrypt.HashPassword(changePasswordDto.NewPassword);
-        await dbContext.SaveChangesAsync();
+        await dbContext.SaveChangesAsync(cancellationToken);
         logger.LogInformation("Password changed successfully for user {UserId}.", foundUser.Id);
         return new ConfirmationResponseDto() { Message = "Password changed successfully" };
     }

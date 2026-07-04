@@ -15,16 +15,14 @@ namespace cusho.Services;
 
 public class AuthService(ApplicationDbContext dbContext, IOptions<JwtOptions> jwtOptions, ILogger<AuthService> logger)
 {
-    public async Task<Result<UserResponseDto>> RegisterUserAsync(UserRegistrationDto userRegistrationDto)
+    public async Task<Result<UserResponseDto>> RegisterUserAsync(UserRegistrationDto userRegistrationDto, CancellationToken cancellationToken)
     {
         var normalizedEmail = userRegistrationDto.Email.Trim().ToLowerInvariant();
 
-        if (await dbContext.Users.AnyAsync(u => u.Email == normalizedEmail))
+        if (await dbContext.Users.AnyAsync(u => u.Email.Equals(normalizedEmail), cancellationToken))
             return Result<UserResponseDto>.Failure("Email is already in use");
 
         var cart = new Cart();
-
-        dbContext.Carts.Add(cart);
 
         var user = new User()
         {
@@ -35,7 +33,7 @@ public class AuthService(ApplicationDbContext dbContext, IOptions<JwtOptions> jw
             Password = BCrypt.Net.BCrypt.HashPassword(userRegistrationDto.Password),
         };
         dbContext.Users.Add(user);
-        await dbContext.SaveChangesAsync();
+        await dbContext.SaveChangesAsync(cancellationToken);
 
         var userResponseDto = new UserResponseDto()
         {
@@ -48,11 +46,11 @@ public class AuthService(ApplicationDbContext dbContext, IOptions<JwtOptions> jw
         return userResponseDto;
     }
 
-    public async Task<Result<LoginResponseDto>> LoginAsync(LoginDto loginDto)
+    public async Task<Result<LoginResponseDto>> LoginAsync(LoginDto loginDto, CancellationToken cancellationToken)
     {
         var normalizedEmail = loginDto.Email.ToLowerInvariant();
 
-        var foundUser = await dbContext.Users.FirstOrDefaultAsync(u => u.Email == normalizedEmail);
+        var foundUser = await dbContext.Users.FirstOrDefaultAsync(u => u.Email.Equals(normalizedEmail), cancellationToken);
         if (foundUser is not { IsActive: false } || !BCrypt.Net.BCrypt.Verify(loginDto.Password, foundUser.Password))
         {
             logger.LogWarning("Login failed due to invalid credentials.");

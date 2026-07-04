@@ -8,7 +8,7 @@ namespace cusho.Services;
 
 public class ProductsService(ApplicationDbContext dbContext, ILogger<ProductsService> logger)
 {
-    public async Task<Result<List<ProductResponseDto>>> GetAllProductsAsync()
+    public async Task<Result<List<ProductResponseDto>>> GetAllProductsAsync(CancellationToken cancellationToken)
     {
         var allProducts = await dbContext.Products.AsNoTracking().Select(p => new ProductResponseDto()
         {
@@ -16,12 +16,12 @@ public class ProductsService(ApplicationDbContext dbContext, ILogger<ProductsSer
             Name = p.Name,
             Description = p.Description,
             Price = p.Price
-        }).ToListAsync();
+        }).ToListAsync(cancellationToken);
 
         return allProducts;
     }
 
-    public async Task<Result<ProductResponseDto>> CreateProductAsync(CreateProductDto createProductDto)
+    public async Task<Result<ProductResponseDto>> CreateProductAsync(CreateProductDto createProductDto, CancellationToken cancellationToken)
     {
         var createdProduct = new Product()
         {
@@ -30,9 +30,9 @@ public class ProductsService(ApplicationDbContext dbContext, ILogger<ProductsSer
             Description = createProductDto.Description,
             Price = createProductDto.Price
         };
-        await dbContext.Products.AddAsync(createdProduct);
+        dbContext.Products.Add(createdProduct);
 
-        await dbContext.SaveChangesAsync();
+        await dbContext.SaveChangesAsync(cancellationToken);
         var productResponse = new ProductResponseDto
         {
             Id = createdProduct.Id,
@@ -43,7 +43,7 @@ public class ProductsService(ApplicationDbContext dbContext, ILogger<ProductsSer
         return productResponse;
     }
 
-    public async Task<Result<ProductResponseDto>> GetProductByIdAsync(Guid productId)
+    public async Task<Result<ProductResponseDto>> GetProductByIdAsync(Guid productId, CancellationToken cancellationToken)
     {
         var foundProduct = await dbContext.Products.AsNoTracking().Where(p => p.Id.Equals(productId)).Select(p => new ProductResponseDto()
         {
@@ -51,12 +51,12 @@ public class ProductsService(ApplicationDbContext dbContext, ILogger<ProductsSer
             Name = p.Name,
             Description = p.Description,
             Price = p.Price
-        }).FirstOrDefaultAsync();
+        }).FirstOrDefaultAsync(cancellationToken);
 
         return foundProduct ?? Result<ProductResponseDto>.Failure("Product not found");
     }
 
-    public async Task<Result<ProductResponseDto>> UpdateProductByIdAsync(UpdateProductDto updateProduct)
+    public async Task<Result<ProductResponseDto>> UpdateProductByIdAsync(UpdateProductDto updateProduct, CancellationToken cancellationToken)
     {
         var foundProduct = await dbContext.Products.FindAsync(updateProduct.Id);
 
@@ -74,7 +74,7 @@ public class ProductsService(ApplicationDbContext dbContext, ILogger<ProductsSer
         if (updateProduct.CollectionId.HasValue)
             foundProduct.CollectionId = updateProduct.CollectionId.Value;
 
-        await dbContext.SaveChangesAsync();
+        await dbContext.SaveChangesAsync(cancellationToken);
 
         return new ProductResponseDto
         {
@@ -85,16 +85,12 @@ public class ProductsService(ApplicationDbContext dbContext, ILogger<ProductsSer
         };
     }
 
-    public async Task<Result<bool>> DeleteProductByIdAsync(Guid productId)
+    public async Task<Result<bool>> DeleteProductByIdAsync(Guid productId, CancellationToken cancellationToken)
     {
-        var foundProduct = await dbContext.Products.FindAsync(productId);
+        var deleted = await dbContext.Products
+            .Where(p => p.Id.Equals(productId))
+            .ExecuteDeleteAsync(cancellationToken);
 
-        if (foundProduct is null)
-            return Result<bool>.Failure("Product not found");
-
-        dbContext.Products.Remove(foundProduct);
-        await dbContext.SaveChangesAsync();
-
-        return true;
+        return deleted > 0 ? true : Result<bool>.Failure("Product not found");
     }
 }

@@ -6,15 +6,15 @@ using Microsoft.AspNetCore.Mvc;
 namespace cusho.Controllers;
 
 [Route("api/[controller]")]
-public class AuthController(AuthService authService) : ApiControllerBase
+public sealed class AuthController(AuthService authService) : ApiControllerBase
 {
     [HttpPost("register")]
     public async Task<Results<
             CreatedAtRoute<UserResponseDto>,
             ProblemHttpResult
-        >> RegisterUser(UserRegistrationDto userRegistrationDto)
+        >> RegisterUser(UserRegistrationDto userRegistrationDto, CancellationToken cancellationToken)
     {
-        var result = await authService.RegisterUserAsync(userRegistrationDto);
+        var result = await authService.RegisterUserAsync(userRegistrationDto, cancellationToken);
 
         if (result.IsFailure)
         {
@@ -28,9 +28,9 @@ public class AuthController(AuthService authService) : ApiControllerBase
     public async Task<Results<
             Ok<LoginResponseDto>,
             ProblemHttpResult
-        >> Login(LoginDto loginDto)
+            >> Login(LoginDto loginDto, CancellationToken cancellationToken)
     {
-        var result = await authService.LoginAsync(loginDto);
+        var result = await authService.LoginAsync(loginDto, cancellationToken);
 
         if (result.IsFailure)
         {

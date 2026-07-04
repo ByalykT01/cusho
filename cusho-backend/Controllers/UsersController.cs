@@ -15,9 +15,9 @@ public sealed class UsersController(UsersService usersService) : ApiControllerBa
     public async Task<Results<
         Ok<UserResponseDto>,
         ProblemHttpResult
-    >> GetUserById(Guid userId)
+    >> GetUserById(Guid userId, CancellationToken cancellationToken)
     {
-        var result = await usersService.GetUserByIdAsync(userId);
+        var result = await usersService.GetUserByIdAsync(userId, cancellationToken);
 
         if (result.IsFailure)
         {
@@ -29,9 +29,9 @@ public sealed class UsersController(UsersService usersService) : ApiControllerBa
 
     [Authorize("IsAdmin")]
     [HttpGet]
-    public async Task<Ok<List<UserResponseDto>>> GetUsers()
+    public async Task<Ok<List<UserResponseDto>>> GetUsers(CancellationToken cancellationToken)
     {
-        var result = await usersService.GetAllUsersAsync();
+        var result = await usersService.GetAllUsersAsync(cancellationToken);
 
         return TypedResults.Ok(result.Value);
     }
@@ -41,14 +41,14 @@ public sealed class UsersController(UsersService usersService) : ApiControllerBa
     public async Task<Results<
         NoContent,
         ProblemHttpResult
-    >> ChangePassword([FromBody] ChangePasswordDto changePasswordDto)
+    >> ChangePassword([FromBody] ChangePasswordDto changePasswordDto, CancellationToken cancellationToken)
     {
         if (!TryGetCurrentUserId(out var userId))
         {
             return UnauthorizedProblem();
         }
 
-        var result = await usersService.ChangePasswordAsync(userId, changePasswordDto);
+        var result = await usersService.ChangePasswordAsync(userId, changePasswordDto, cancellationToken);
 
         if (result.IsFailure)
         {
@@ -65,14 +65,14 @@ public sealed class UsersController(UsersService usersService) : ApiControllerBa
     public async Task<Results<
         Ok<UserResponseDto>,
         ProblemHttpResult
-    >> GetLoggedInUser()
+    >> GetLoggedInUser(CancellationToken cancellationToken)
     {
         if (!TryGetCurrentUserId(out var userId))
         {
             return UnauthorizedProblem();
         }
 
-        var result = await usersService.GetUserByIdAsync(userId);
+        var result = await usersService.GetUserByIdAsync(userId, cancellationToken);
 
         if (result.IsFailure)
         {

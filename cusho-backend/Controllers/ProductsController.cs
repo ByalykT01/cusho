@@ -10,17 +10,17 @@ namespace cusho.Controllers;
 public sealed class ProductsController(ProductsService productsService) : ApiControllerBase
 {
     [HttpGet]
-    public async Task<Ok<List<ProductResponseDto>>> GetAllProducts()
+    public async Task<Ok<List<ProductResponseDto>>> GetAllProducts(CancellationToken cancellationToken)
     {
-        var result = await productsService.GetAllProductsAsync();
+        var result = await productsService.GetAllProductsAsync(cancellationToken);
         return TypedResults.Ok(result.Value);
     }
 
     [Authorize("IsAdmin")]
     [HttpPost]
-    public async Task<Results<CreatedAtRoute<ProductResponseDto>, ProblemHttpResult>> CreateNewProduct(CreateProductDto createProduct)
+    public async Task<Results<CreatedAtRoute<ProductResponseDto>, ProblemHttpResult>> CreateNewProduct(CreateProductDto createProduct, CancellationToken cancellationToken)
     {
-        var result = await productsService.CreateProductAsync(createProduct);
+        var result = await productsService.CreateProductAsync(createProduct, cancellationToken);
         if (result.IsFailure)
         {
             return BadRequestProblem(result.Error);
@@ -35,9 +35,9 @@ public sealed class ProductsController(ProductsService productsService) : ApiCon
     public async Task<Results<
         Ok<ProductResponseDto>,
         ProblemHttpResult>>
-     GetProductById(Guid productId)
+     GetProductById(Guid productId, CancellationToken cancellationToken)
     {
-        var result = await productsService.GetProductByIdAsync(productId);
+        var result = await productsService.GetProductByIdAsync(productId, cancellationToken);
 
         if (result.IsFailure)
         {
@@ -52,11 +52,11 @@ public sealed class ProductsController(ProductsService productsService) : ApiCon
     public async Task<Results<
         Ok<ProductResponseDto>,
         ProblemHttpResult>>
-     UpdateProduct(Guid productId, UpdateProductDto updateProduct)
+     UpdateProduct(Guid productId, UpdateProductDto updateProduct, CancellationToken cancellationToken)
     {
         updateProduct.Id = productId;
 
-        var result = await productsService.UpdateProductByIdAsync(updateProduct);
+        var result = await productsService.UpdateProductByIdAsync(updateProduct, cancellationToken);
 
         if (result.IsFailure)
         {
@@ -71,9 +71,9 @@ public sealed class ProductsController(ProductsService productsService) : ApiCon
     public async Task<Results<
         NoContent,
         ProblemHttpResult>>
-     DeleteProduct(Guid productId)
+     DeleteProduct(Guid productId, CancellationToken cancellationToken)
     {
-        var result = await productsService.DeleteProductByIdAsync(productId);
+        var result = await productsService.DeleteProductByIdAsync(productId, cancellationToken);
 
         if (result.IsFailure)
         {
