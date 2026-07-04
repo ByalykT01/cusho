@@ -10,7 +10,7 @@ namespace cusho.Controllers;
 [Route("api/[controller]")]
 public sealed class UsersController(UsersService usersService) : ApiControllerBase
 {
-    [Authorize("IsAdmin")]
+    [Authorize]
     [HttpGet("{userId}", Name = nameof(GetUserById))]
     public async Task<Results<
         Ok<UserResponseDto>,

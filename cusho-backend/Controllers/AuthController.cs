@@ -11,14 +11,14 @@ public class AuthController(AuthService authService) : ApiControllerBase
     [HttpPost("register")]
     public async Task<Results<
             CreatedAtRoute<UserResponseDto>,
-            BadRequest<string>
+            ProblemHttpResult
         >> RegisterUser(UserRegistrationDto userRegistrationDto)
     {
         var result = await authService.RegisterUserAsync(userRegistrationDto);
 
         if (result.IsFailure)
         {
-            return TypedResults.BadRequest(result.Error);
+            return BadRequestProblem(result.Error);
         }
 
         return TypedResults.CreatedAtRoute(result.Value, nameof(UsersController.GetUserById), new { userId = result.Value.Id });
@@ -27,14 +27,14 @@ public class AuthController(AuthService authService) : ApiControllerBase
     [HttpPost("login")]
     public async Task<Results<
             Ok<LoginResponseDto>,
-            UnauthorizedHttpResult
+            ProblemHttpResult
         >> Login(LoginDto loginDto)
     {
         var result = await authService.LoginAsync(loginDto);
 
         if (result.IsFailure)
         {
-            return TypedResults.Unauthorized();
+            return UnauthorizedProblem();
         }
 
         return TypedResults.Ok(result.Value);

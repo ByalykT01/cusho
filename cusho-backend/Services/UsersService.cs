@@ -26,7 +26,7 @@ public sealed class UsersService(ApplicationDbContext dbContext, ILogger<UsersSe
 
     public async Task<Result<UserResponseDto>> GetUserByEmailAsync(string email)
     {
-        var normalizedEmail = email.ToLowerInvariant();
+        var normalizedEmail = email.Trim().ToLowerInvariant();
         var foundUser = await dbContext.Users.AsNoTracking().Where(u => u.Email.Equals(normalizedEmail))
             .Select(u => new UserResponseDto()
             {

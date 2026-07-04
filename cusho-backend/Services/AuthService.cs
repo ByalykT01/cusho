@@ -17,7 +17,7 @@ public class AuthService(ApplicationDbContext dbContext, IOptions<JwtOptions> jw
 {
     public async Task<Result<UserResponseDto>> RegisterUserAsync(UserRegistrationDto userRegistrationDto)
     {
-        var normalizedEmail = userRegistrationDto.Email.ToLowerInvariant();
+        var normalizedEmail = userRegistrationDto.Email.Trim().ToLowerInvariant();
 
         if (await dbContext.Users.AnyAsync(u => u.Email == normalizedEmail))
             return Result<UserResponseDto>.Failure("Email is already in use");
@@ -53,7 +53,7 @@ public class AuthService(ApplicationDbContext dbContext, IOptions<JwtOptions> jw
         var normalizedEmail = loginDto.Email.ToLowerInvariant();
 
         var foundUser = await dbContext.Users.FirstOrDefaultAsync(u => u.Email == normalizedEmail);
-        if (foundUser is null || !BCrypt.Net.BCrypt.Verify(loginDto.Password, foundUser.Password))
+        if (foundUser is not { IsActive: false } || !BCrypt.Net.BCrypt.Verify(loginDto.Password, foundUser.Password))
         {
             logger.LogWarning("Login failed due to invalid credentials.");
             return Result<LoginResponseDto>.Failure("Invalid email or password");
