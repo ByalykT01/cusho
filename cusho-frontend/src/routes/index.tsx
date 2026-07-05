@@ -1,6 +1,7 @@
 import * as fs from "node:fs";
 import { createFileRoute, Link, useRouter } from "@tanstack/react-router";
 import { createServerFn } from "@tanstack/react-start";
+import { authClient } from "@/shared/lib/auth-client";
 
 const filePath = "count.txt";
 
@@ -28,12 +29,29 @@ export const Route = createFileRoute("/")({
   loader: async () => await getCount(),
 });
 
-function Home() {
+async function Home() {
   const router = useRouter();
   const state = Route.useLoaderData();
 
+  const { data, error } = await authClient.getAccessToken({
+    providerId: "keycloak" // Match the ID used in your genericOAuth config
+  });
+
+  console.log(data?.accessToken);
+
+  const handleKeycloakSignIn = async () => {
+    try {
+      await authClient.signIn.oauth2({
+        providerId: "keycloak",
+        callbackURL: "/",
+      });
+    } catch (error) {
+      console.error("Keycloak sign-in encountered an error:", error);
+    }
+  };
+
   return (
-    <>
+    <div style={{ display: "flex", flexDirection: "column", gap: "10px", padding: "20px" }}>
       <button
         type="button"
         onClick={() => {
@@ -45,10 +63,17 @@ function Home() {
         Add 1 to {state}?
       </button>
 
+      {/* Standard functional button */}
+      <button type="button" onClick={handleKeycloakSignIn}>
+        Sign in with Keycloak
+      </button>
+
+      <hr style={{ width: "100%", margin: "10px 0" }} />
+
       <Link to="/about">About</Link>
       <Link to="/resume">Resume</Link>
       <Link to="/projects">Projects</Link>
       <Link to="/press">Portfolio</Link>
-    </>
+    </div>
   );
 }
