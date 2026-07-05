@@ -16,6 +16,6 @@ public class Product
 
     public DateTime CreatedAt { get; init; }
 
-    public ICollection<ProductImage> Images { get; set; } = new List<ProductImage>();
-    public ICollection<ProductTag> ProductTags { get; set; } = new List<ProductTag>();
+    public ICollection<ProductImage> Images { get; set; } = [];
+    public ICollection<ProductTag> ProductTags { get; set; } = [];
 }

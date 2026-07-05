@@ -24,6 +24,7 @@ public class ApplicationDbContext(DbContextOptions<ApplicationDbContext> options
         {
             entity.ToTable("Users");
             entity.HasIndex(e => e.Email).IsUnique();
+            entity.HasIndex(u => u.KeycloakId).IsUnique();
         });
 
         modelBuilder.Entity<ProductTag>()

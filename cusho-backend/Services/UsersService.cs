@@ -82,14 +82,6 @@ public sealed class UsersService(ApplicationDbContext dbContext, ILogger<UsersSe
             return Result<ConfirmationResponseDto>.Failure("Current password and new password are the same");
         }
 
-
-        if (changePasswordDto.NewPassword != changePasswordDto.ConfirmNewPassword)
-        {
-            logger.LogWarning("Password change failed because password confirmation did not match for user {UserId}.",
-                foundUser.Id);
-            return Result<ConfirmationResponseDto>.Failure("Passwords do not match");
-        }
-
         foundUser.Password = BCrypt.Net.BCrypt.HashPassword(changePasswordDto.NewPassword);
         await dbContext.SaveChangesAsync(cancellationToken);
         logger.LogInformation("Password changed successfully for user {UserId}.", foundUser.Id);

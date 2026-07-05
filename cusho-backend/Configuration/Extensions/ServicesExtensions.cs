@@ -12,7 +12,6 @@ public static class ServicesExtensions
         public IHostApplicationBuilder AddServices()
         {
             builder.Services.AddScoped<UsersService>();
-            builder.Services.AddScoped<AuthService>();
             builder.Services.AddScoped<ProductsService>();
             return builder;
         }

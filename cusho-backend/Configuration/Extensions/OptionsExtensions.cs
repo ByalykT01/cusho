@@ -16,8 +16,8 @@ public static class OptionsExtensions
                 .Bind(builder.Configuration.GetSection(DatabaseOptions.SectionName)).ValidateDataAnnotations()
                 .ValidateOnStart();
 
-            builder.Services.AddOptions<JwtOptions>()
-                .Bind(builder.Configuration.GetSection(JwtOptions.SectionName)).ValidateOnStart();
+            builder.Services.AddOptions<KeycloakOptions>()
+                .Bind(builder.Configuration.GetSection(KeycloakOptions.SectionName)).ValidateOnStart();
 
             return builder;
         }

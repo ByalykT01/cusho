@@ -58,7 +58,7 @@ public class ProductsService(ApplicationDbContext dbContext, ILogger<ProductsSer
 
     public async Task<Result<ProductResponseDto>> UpdateProductByIdAsync(UpdateProductDto updateProduct, CancellationToken cancellationToken)
     {
-        var foundProduct = await dbContext.Products.FindAsync(updateProduct.Id);
+        var foundProduct = await dbContext.Products.FirstOrDefaultAsync(p => p.Id == updateProduct.Id, cancellationToken);
 
         if (foundProduct is null)
             return Result<ProductResponseDto>.Failure("Product not found");

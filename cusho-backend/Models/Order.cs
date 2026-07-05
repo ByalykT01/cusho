@@ -11,5 +11,5 @@ public class Order
     public decimal TotalPrice { get; set; }
     public DateTime CreatedAt { get; init; }
 
-    public ICollection<OrderItem> Items { get; set; } = new List<OrderItem>();
+    public ICollection<OrderItem> Items { get; set; } = [];
 }
